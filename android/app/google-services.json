@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "424242613213",
+    "project_id": "bingr-12",
+    "storage_bucket": "bingr-12.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424242613213:android:ee0b58288613e632374434",
+        "android_client_info": {
+          "package_name": "com.example.bingr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtc6FOfv_bG-fsaIauvH4dDqew-1p9l3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
