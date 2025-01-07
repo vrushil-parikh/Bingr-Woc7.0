@@ -1,5 +1,5 @@
-import 'package:bingr/pages/home_page/home_page.dart';
-import 'package:bingr/pages/login_page/login_page.dart';
+import 'package:bingr/screens/home/home_page.dart';
+import 'package:bingr/screens/auth/login_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

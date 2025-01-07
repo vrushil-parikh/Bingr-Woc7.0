@@ -1,4 +1,4 @@
-import 'package:bingr/uihelper/uihelper.dart';
+import 'package:bingr/widgets/uihelper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

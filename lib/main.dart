@@ -1,4 +1,4 @@
-import 'package:bingr/pages/splash_screen/splash_screen.dart';
+import 'package:bingr/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 

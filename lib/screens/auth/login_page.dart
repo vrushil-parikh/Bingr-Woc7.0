@@ -1,7 +1,7 @@
-import 'package:bingr/pages/forgot_password_page/forgot_password_page.dart';
-import 'package:bingr/pages/home_page/home_page.dart';
-import 'package:bingr/pages/signup_page/signup_page.dart';
-import 'package:bingr/uihelper/uihelper.dart';
+import 'package:bingr/screens/auth/forgot_password_page.dart';
+import 'package:bingr/screens/home/home_page.dart';
+import 'package:bingr/screens/auth/signup_page.dart';
+import 'package:bingr/widgets/uihelper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage>{
 
             TextButton(onPressed: (){
               Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgetPasswordPage()));
-            }, child: Text("Forgot Password?",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500),))
+            }, child: Text("Forgot Password?",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500),)),
 
           ],
         ),
