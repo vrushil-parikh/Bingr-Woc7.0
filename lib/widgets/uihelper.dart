@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 class UiHelper {
+
   static CustomeTextField(TextEditingController controller,String text,IconData iconData,bool toHide){
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25,vertical: 15),
@@ -8,9 +9,9 @@ class UiHelper {
         controller: controller,
         decoration: InputDecoration(
           hintText: text,
-          suffixIcon: Icon(iconData),
+          prefixIcon: Icon(iconData),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(25)
+            borderRadius: BorderRadius.circular(8)
           )
         ),
       ),
