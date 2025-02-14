@@ -1,7 +1,6 @@
 import 'package:bingr/screens/auth/login_page.dart';
 import 'package:bingr/screens/auth/signup_page.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 

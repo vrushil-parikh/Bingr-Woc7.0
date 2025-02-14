@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.pop(context); // Close drawer
                           Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => MovieDrawerPage()));
+                              MaterialPageRoute(builder: (context) => MovieListPage(apiUrl: "https://imdb236.p.rapidapi.com/imdb/top250-movies", title: "Top movies")));
                         },
                       ),
                       ListTile(

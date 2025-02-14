@@ -1,31 +1,31 @@
 class Movie {
   final String id;
   final String title;
-  final String? description;
   final String? imageUrl;
+  final String? description;
   final String? releaseDate;
-  final List<String> genres;
-  final double? rating;
+  final double? averageRating;
+  final List<String>? genres;
 
   Movie({
     required this.id,
     required this.title,
-    this.description,
     this.imageUrl,
+    this.description,
     this.releaseDate,
-    required this.genres,
-    this.rating,
+    this.averageRating,
+    this.genres,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
-      id: json['id'],
-      title: json['primaryTitle'],
-      description: json['description'],
-      imageUrl: json['primaryImage'],
-      releaseDate: json['releaseDate'],
-      genres: List<String>.from(json['genres'] ?? []),
-      rating: json['averageRating']?.toDouble(),
+      id: json["id"],
+      title: json["primaryTitle"] ?? json["originalTitle"] ?? "Unknown Title",
+      imageUrl: json["primaryImage"],
+      description: json["description"],
+      releaseDate: json["releaseDate"],
+      averageRating: json["averageRating"]?.toDouble(),
+      genres: (json["genres"] as List?)?.map((g) => g.toString()).toList() ?? [],
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:bingr/screens/auth/login_page.dart';
 import 'package:bingr/screens/home/home_page.dart';
 import 'package:bingr/widgets/uihelper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -151,6 +152,24 @@ class _SignupPageState extends State<SignupPage> {
                 nameController.text.trim(),
               );
             }, "Sign Up"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Already Have an Account?",
+                  style: TextStyle(fontSize: 16,color: themeColor),
+                ),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => LoginPage()));
+                    },
+                    child: Text(
+                      "Login",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500,color: Colors.lightBlueAccent),
+                    )),
+              ],
+            ),
           ],
         ),
       ),

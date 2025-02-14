@@ -1,218 +1,243 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/material.dart';
-import '../../models/movie_model.dart';
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import '../../models/movie_model.dart';
+import '../DetailView/detail_view_page.dart';
 import 'package:http/http.dart' as http;
+
+import '../Movies/movie_drawer_page.dart';
+
 class MoviePage extends StatefulWidget {
   const MoviePage({super.key});
 
   @override
-  State<MoviePage> createState() => _MoviePageState();
+  _MoviePageState createState() => _MoviePageState();
 }
 
 class _MoviePageState extends State<MoviePage> {
-  List<Map<String, dynamic>> moviesJsonList = [];
+  List<Movie> trendingMovies = [];
+  List<Movie> topMovies = [];
+  List<Movie> topTVShows = [];
+  List<Movie> upcomingMovies = [];
 
   @override
   void initState() {
     super.initState();
-    fetchMovies();
+    fetchTrendingMovies();
+    fetchTopMovies();
+    fetchTopTvShows();
+    fetchUpcomingMovies();
   }
 
-  Future<void> fetchMovies() async {
-    final url = Uri.parse("https://imdb236.p.rapidapi.com/imdb/india/upcoming");
-    final headers = {
+  Future<void> fetchTrendingMovies() async {
+    await fetchMoviesFromApi("https://imdb236.p.rapidapi.com/imdb/most-popular-movies", (movies) => setState(() => trendingMovies = movies));
+  }
+
+  Future<void> fetchTopMovies() async {
+    await fetchMoviesFromApi("https://imdb236.p.rapidapi.com/imdb/top250-movies", (movies) => setState(() => topMovies = movies));
+  }
+
+  Future<void> fetchTopTvShows() async {
+    await fetchMoviesFromApi("https://imdb236.p.rapidapi.com/imdb/most-popular-tv", (movies) => setState(() => topTVShows = movies));
+  }
+
+  Future<void> fetchUpcomingMovies() async {
+    await fetchMoviesFromApi("https://imdb236.p.rapidapi.com/imdb/india/upcoming", (movies) => setState(() => upcomingMovies = movies));
+  }
+
+  Future<void> fetchMoviesFromApi(String apiUrl, Function(List<Movie>) callback) async {
+    const Map<String, String> headers = {
       "x-rapidapi-host": "imdb236.p.rapidapi.com",
       "x-rapidapi-key": "fc3ca915a4msh5db06750d7fa8c4p1523b6jsn34cef66d73af",
     };
 
     try {
-      final response = await http.get(url, headers: headers);
+      final response = await http.get(Uri.parse(apiUrl), headers: headers);
       if (response.statusCode == 200) {
-        debugPrint("Raw JSON Response: ${response.body}", wrapWidth: 1024);
-        List<dynamic> data = jsonDecode(response.body);
-
-        setState(() {
-          moviesJsonList = data.map((movie) => Map<String, dynamic>.from(movie)).toList();
-        });
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<Movie> movies = jsonResponse.map((json) => Movie.fromJson(json)).toList();
+        callback(movies);
       } else {
-        print("Failed to load data: ${response.statusCode}");
+        print("Failed to load data: \${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching data: $e");
+      print("Error fetching data: \$e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Movie> movies =
-        moviesJsonList.map((json) => Movie.fromJson(json)).toList();
     return Scaffold(
-      body: moviesJsonList.isEmpty? Center(child: CircularProgressIndicator(),) : Center(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20,),
-              // Featured Movies Carousel
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 15,),
+            if (trendingMovies.isNotEmpty)
               CarouselSlider(
-                options: CarouselOptions(
-                  height: 400,
-                  viewportFraction: 0.8,
-                  enlargeCenterPage: true,
-                  autoPlay: true,
-                  autoPlayInterval: const Duration(seconds: 5),
-                ),
-                items:
-                    movies.where((movie) => movie.imageUrl != null).map((movie) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          image: DecorationImage(
-                            image: NetworkImage(movie.imageUrl!),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.8),
-                              ],
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  movie.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (movie.description != null)
-                                  Text(
-                                    movie.description!,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
+                options: CarouselOptions(autoPlay: true, height: 350),
+                items: trendingMovies.map((movie) => BuildCarouselCard(movie)).toList(),
               ),
-        
-              const SizedBox(height: 20),
-        
-              // Genre-based Horizontal Lists
-              ..._buildGenreSections(movies),
-            ],
-          ),
+            buildMovieSection("Top 250 Movies", topMovies),
+            buildMovieSection("Top TV Shows", topTVShows),
+            buildMovieSection("Upcoming Movies", upcomingMovies),
+          ],
         ),
       ),
     );
   }
-
-  List<Widget> _buildGenreSections(List<Movie> movies) {
-    // Get unique genres
-    final Set<String> genres = {};
-    for (var movie in movies) {
-      genres.addAll(movie.genres);
-    }
-
-    return genres.map((genre) {
-      final genreMovies =
-          movies.where((movie) => movie.genres.contains(genre)).toList();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget BuildCarouselCard(Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailPage(movieId: movie.id),
+          ),
+        );
+      },
+      child: Column(
         children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              genre,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              movie.imageUrl ?? 'https://via.placeholder.com/150',
+              fit: BoxFit.cover,
+              width: 250,
+              height: 300,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/images/app_logo.png', // Make sure you have a local placeholder image
+                  fit: BoxFit.cover,
+                  width: 250,
+                  height: 300,
+                );
+              },
             ),
           ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                movie.title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  overflow: TextOverflow.clip,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (movie.averageRating != null)
+                Text(
+                  "⭐${movie.averageRating}",
+                  style: const TextStyle(color: Colors.black),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+  Widget buildMovieCard(Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailPage(movieId: movie.id),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              movie.imageUrl ?? 'https://via.placeholder.com/150',
+              fit: BoxFit.cover,
+              width: 150,
+              height: 200,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/images/app_logo.png', // Local fallback image
+                  fit: BoxFit.cover,
+                  width: 150,
+                  height: 200,
+                );
+              },
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(4),
+            width: 150,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  movie.title,
+                  style: const TextStyle(
+                    overflow: TextOverflow.clip,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (movie.averageRating != null)
+                  Text(
+                    "⭐ ${movie.averageRating}",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+
+  Widget buildMovieSection(String title, List<Movie> movies) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MovieListPage(apiUrl: "https://imdb236.p.rapidapi.com/imdb/top250-movies", title: "Top Movies")),
+                ),
+                child: const Text("More", style: TextStyle(color: Colors.blue)),
+              ),
+            ],
+          ),
           SizedBox(
-            height: 200,
+            height: 260,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: genreMovies.length,
+              itemCount: min(movies.length,10),
               itemBuilder: (context, index) {
-                final movie = genreMovies[index];
-                return Container(
-                  width: 130,
-                  margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                final movie = movies[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                movie.imageUrl ??
-                                    'https://via.placeholder.com/130x180',
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        movie.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      if (movie.rating != null)
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 16,
-                            ),
-                            Text(
-                              movie.rating!.toString(),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
+                      buildMovieCard(movie),
+                      const SizedBox(height: 5),
                     ],
                   ),
                 );
@@ -220,7 +245,7 @@ class _MoviePageState extends State<MoviePage> {
             ),
           ),
         ],
-      );
-    }).toList();
+      ),
+    );
   }
 }
