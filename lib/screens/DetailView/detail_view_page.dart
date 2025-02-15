@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bingr/screens/DetailView/web_view_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +18,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   Map<String, dynamic>? movieDetails;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? "guest";
-  bool isInWatchlist = false; // Track whether the movie is in the watchlist
+  bool isInWatchlist = false;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     }
   }
 
-  /// Check if movie is already in watchlist
+  /// Check if the movie is already in the watchlist
   Future<void> checkIfInWatchlist() async {
     final doc = await _firestore
         .collection('users')
@@ -78,7 +79,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         isInWatchlist = true;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to Watchlist!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Added to Watchlist!')));
     } catch (e) {
       print("Error adding to watchlist: $e");
     }
@@ -98,9 +100,26 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         isInWatchlist = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from Watchlist!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Removed from Watchlist!')));
     } catch (e) {
       print("Error removing from watchlist: $e");
+    }
+  }
+
+  /// Open WebView for Trailer
+  void openTrailer() {
+    final String? trailerUrl = movieDetails?["url"];
+
+    if (trailerUrl != null && trailerUrl.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WebViewPage(url: trailerUrl)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No trailer link available')),
+      );
     }
   }
 
@@ -161,20 +180,31 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.only(bottom: 20.0, left: 12, right: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
               onPressed: isInWatchlist ? removeFromWatchlist : addToWatchlist,
-              child: Text(isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo, // Set color to indigo
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              child: Text(
+                isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist",
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
             ElevatedButton(
-              onPressed: () {
-                // Show Trailer Logic (Needs Trailer URL Handling)
-                print("Watch Trailer");
-              },
-              child: const Text("Watch Trailer"),
+              onPressed: openTrailer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo, // Indigo color
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              child: const Text(
+                "Watch Trailer",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),

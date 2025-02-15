@@ -140,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       UserAccountsDrawerHeader(
                         decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: Colors.indigo,
                           image: DecorationImage(
                             image: NetworkImage('https://via.placeholder.com/350x150'),
                             fit: BoxFit.cover,
@@ -182,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => WatchlistPage()));
+                                  builder: (context) => FavouritePage()));
                         },
                       ),
                     ],
