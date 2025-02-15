@@ -29,28 +29,47 @@ class _SearchPageState extends State<SearchPage> {
 
     const Map<String, String> headers = {
       "x-rapidapi-host": "imdb236.p.rapidapi.com",
-      "x-rapidapi-key": "fc3ca915a4msh5db06750d7fa8c4p1523b6jsn34cef66d73af",
+      "x-rapidapi-key": "3cbe6b1841mshdf9bfd2110f25c3p1784b0jsn3083220044db",
     };
 
     final url = "https://imdb236.p.rapidapi.com/imdb/autocomplete?query=$query";
 
     try {
       final response = await http.get(Uri.parse(url), headers: headers);
+
       if (response.statusCode == 200) {
-        final List<dynamic> jsonResponse = jsonDecode(response.body);
-        setState(() {
-          autocompleteSuggestions = jsonResponse.map((item) => item["title"].toString()).toList();
-          showSuggestions = autocompleteSuggestions.isNotEmpty;
-        });
+        final jsonResponse = jsonDecode(response.body);
+
+        print("Autocomplete API Raw Response: $jsonResponse");
+
+        // Ensure the response is a list
+        if (jsonResponse is List) {
+          // Extract only the titles from the response
+          List<String> fetchedSuggestions = jsonResponse.map<String>((item) {
+            return item['primaryTitle'] ?? "Unknown";
+          }).toList();
+
+          setState(() {
+            autocompleteSuggestions = fetchedSuggestions;
+            
+            showSuggestions = autocompleteSuggestions.isNotEmpty; // Toggle visibility based on suggestions
+            print("Updated Autocomplete Suggestions: $autocompleteSuggestions");
+          });
+        } else {
+          print("Unexpected response format: $jsonResponse");
+          setState(() {
+            autocompleteSuggestions = [];
+            showSuggestions = false;
+          });
+        }
       } else {
-        setState(() => showSuggestions = false);
-        print("Failed to load autocomplete: ${response.statusCode}");
+        print("Failed to load autocomplete suggestions: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() => showSuggestions = false);
       print("Error fetching autocomplete: $e");
     }
   }
+
 
   Future<void> fetchSearchResults(String query) async {
     if (query.isEmpty) return;
@@ -58,24 +77,34 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       isLoading = true;
       searchResults = [];
-      showSuggestions = false; // Hide suggestions when search is performed
+      showSuggestions = false;
     });
 
     const Map<String, String> headers = {
       "x-rapidapi-host": "imdb236.p.rapidapi.com",
-      "x-rapidapi-key": "fc3ca915a4msh5db06750d7fa8c4p1523b6jsn34cef66d73af",
+      "x-rapidapi-key": "3cbe6b1841mshdf9bfd2110f25c3p1784b0jsn3083220044db",
     };
 
     final url = "https://imdb236.p.rapidapi.com/imdb/search?type=movie&query=$query&rows=25";
 
     try {
       final response = await http.get(Uri.parse(url), headers: headers);
+
       if (response.statusCode == 200) {
-        final List<dynamic> jsonResponse = jsonDecode(response.body);
-        List<Movie> fetchedMovies = jsonResponse.map((json) => Movie.fromJson(json)).toList();
-        setState(() {
-          searchResults = fetchedMovies;
-        });
+        final jsonResponse = jsonDecode(response.body);
+
+        if (jsonResponse == null || !jsonResponse.containsKey('results')) {
+          setState(() {
+            searchResults = [];
+          });
+        } else {
+          List<dynamic> resultsList = jsonResponse["results"];
+          List<Movie> fetchedMovies = resultsList.map((json) => Movie.fromJson(json)).toList();
+
+          setState(() {
+            searchResults = fetchedMovies;
+          });
+        }
       } else {
         print("Failed to load search results: ${response.statusCode}");
       }
@@ -91,7 +120,6 @@ class _SearchPageState extends State<SearchPage> {
     return GestureDetector(
       onTap: () => setState(() => showSuggestions = false), // Hide suggestions when tapping outside
       child: Scaffold(
-        appBar: AppBar(title: const Text("Search Movies")),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -103,12 +131,14 @@ class _SearchPageState extends State<SearchPage> {
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onChanged: (query) => fetchAutocompleteSuggestions(query),
+                onChanged: (query) {
+                  fetchAutocompleteSuggestions(query); // This will trigger the fetch of suggestions
+                },
                 onSubmitted: (query) => fetchSearchResults(query),
               ),
 
               // Autocomplete Suggestions Box
-              if (showSuggestions)
+              if (showSuggestions && autocompleteSuggestions.isNotEmpty)
                 Container(
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * 0.3, // Limit height
@@ -184,7 +214,7 @@ class _SearchPageState extends State<SearchPage> {
               width: 150,
               height: 200,
               errorBuilder: (context, error, stackTrace) {
-                return Image.asset('assets/images/placeholder.jpg', fit: BoxFit.cover, width: 150, height: 200);
+                return Image.asset('assets/images/app_logo.png', fit: BoxFit.cover, width: 150, height: 200);
               },
             ),
           ),

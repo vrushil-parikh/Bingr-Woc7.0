@@ -1,6 +1,5 @@
 import 'package:bingr/screens/Home/movie_page.dart';
 import 'package:bingr/screens/Search/search_page.dart';
-import 'package:bingr/screens/TV%20Shows/tv_shows_page.dart';
 import 'package:bingr/screens/WatchList/favourite_page.dart';
 import 'package:bingr/screens/auth/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../resources/app_strings.dart';
 import '../../resources/app_values.dart';
 import '../Movies/movie_drawer_page.dart';
+import '../TV Shows/tv_shows_page.dart';
 import '../WatchList/watchlist_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -75,9 +75,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   final List<Widget> _screens = [
-    const MoviePage(), // Your existing HomePage
-    const SearchPage(),
-    const WatchlistPage(),
+     MoviePage(), // Your existing HomePage
+     SearchPage(),
+     WatchlistPage(),
   ];
   void _onItemTapped(int index) {
     setState(() {
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => TvShowsPage()));
+                              MaterialPageRoute(builder: (context) => TvShowsPage(apiUrl: "https://imdb236.p.rapidapi.com/imdb/top250-tv",title: "Popular TV shows",)));
                         },
                       ),
                       ListTile(
@@ -182,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => FavouritePage()));
+                                  builder: (context) => WatchlistPage()));
                         },
                       ),
                     ],

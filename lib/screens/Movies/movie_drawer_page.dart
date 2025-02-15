@@ -32,7 +32,7 @@ class _MovieListPageState extends State<MovieListPage> {
 
     const Map<String, String> headers = {
       "x-rapidapi-host": "imdb236.p.rapidapi.com",
-      "x-rapidapi-key": "fc3ca915a4msh5db06750d7fa8c4p1523b6jsn34cef66d73af",
+      "x-rapidapi-key": "3cbe6b1841mshdf9bfd2110f25c3p1784b0jsn3083220044db",
     };
 
     try {

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class MovieApiService {
   static const String _baseUrl = "https://imdb236.p.rapidapi.com/imdb/india/upcoming";
-  static const String _apiKey = "fc3ca915a4msh5db06750d7fa8c4p1523b6jsn34cef66d73af"; // Replace with your API key
+  static const String _apiKey = "3cbe6b1841mshdf9bfd2110f25c3p1784b0jsn3083220044db"; // Replace with your API key
   static const String _apiHost = "imdb236.p.rapidapi.com";
 
   // Function to fetch movies
