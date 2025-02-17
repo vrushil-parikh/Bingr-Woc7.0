@@ -20,15 +20,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String userName = "";
-  String userEmail = "";
+  String userName = "Guest";
+  String userEmail = "No Email";
   bool isLoading = true; // Loading indicator
+
   int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
     fetchUserData();
   }
+
   Future<void> fetchUserData() async {
     try {
       debugPrint("Fetching user data...");
@@ -46,17 +49,24 @@ class _HomePageState extends State<HomePage> {
           .doc(user.uid)
           .get();
 
-      if (userDoc.exists) {
-        debugPrint("User Data: ${userDoc.data()}");
+      setState(() {
+        if (userDoc.exists) {
+          debugPrint("User Data: ${userDoc.data()}");
+          userName = userDoc.get("name") ?? user.displayName ?? "No Name";
+          userEmail = userDoc.get("email") ?? user.email ?? "No Email";
+        } else {
+          // If Google login user doesn't exist in Firestore, update it
+          userName = user.displayName ?? "No Name";
+          userEmail = user.email ?? "No Email";
 
-        setState(() {
-          userName = userDoc.get("name") ?? "No Name";
-          userEmail = userDoc.get("email") ?? "No Email";
-          isLoading = false;
-        });
-      } else {
-        debugPrint("No document found for this user.");
-      }
+          FirebaseFirestore.instance.collection("users").doc(user.uid).set({
+            "name": userName,
+            "email": userEmail,
+            "createdAt": DateTime.now(),
+          });
+        }
+        isLoading = false;
+      });
     } catch (e) {
       debugPrint("Error fetching user data: $e");
       setState(() {
@@ -64,14 +74,14 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
-  _logOut() async {
-    await Future.delayed(Duration(seconds: 1));
+
+  Future<void> _logOut() async {
+    await Future.delayed(const Duration(seconds: 1));
     final pref = await SharedPreferences.getInstance();
     await pref.setBool('isLoggedIn', false);
-    FirebaseAuth.instance.signOut().then((value) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginPage()));
-    });
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
   final List<Widget> _screens = [
@@ -79,6 +89,7 @@ class _HomePageState extends State<HomePage> {
      SearchPage(),
      WatchlistPage(),
   ];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -89,8 +100,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
-          title: Text(
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text(
             "Binger",
             style: TextStyle(color: Colors.white),
           ),
@@ -132,35 +143,35 @@ class _HomePageState extends State<HomePage> {
           child: Container(
             color: Colors.white,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Pushes logout button to the bottom
+              mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // Pushes logout button down
               children: [
                 Expanded(
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
                       UserAccountsDrawerHeader(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.indigo,
-                          image: DecorationImage(
-                            image: NetworkImage('https://via.placeholder.com/350x150'),
-                            fit: BoxFit.cover,
-                          ),
                         ),
-                        currentAccountPicture: CircleAvatar(
-                          backgroundImage:
-                          NetworkImage('https://via.placeholder.com/100x100'),
-                        ),
+                        currentAccountPicture: const CircleAvatar(child: Icon(Icons.account_circle,color: Colors.white,size: 80,),backgroundColor: Colors.transparent,),
                         accountName: Text(userName),
                         accountEmail: Text(userEmail),
                       ),
                       ListTile(
-                        leading: const Icon(Icons.movie, color: Colors.black),
+                        leading:
+                        const Icon(Icons.movie, color: Colors.black),
                         title: const Text('Movies',
                             style: TextStyle(color: Colors.black)),
                         onTap: () {
                           Navigator.pop(context); // Close drawer
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => MovieListPage(apiUrl: "https://imdb236.p.rapidapi.com/imdb/top250-movies", title: "Top movies")));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MovieListPage(
+                                      apiUrl:
+                                      "https://imdb236.p.rapidapi.com/imdb/top250-movies",
+                                      title: "Top Movies")));
                         },
                       ),
                       ListTile(
@@ -169,8 +180,14 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(color: Colors.black)),
                         onTap: () {
                           Navigator.pop(context);
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => TvShowsPage(apiUrl: "https://imdb236.p.rapidapi.com/imdb/top250-tv",title: "Popular TV shows",)));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TvShowsPage(
+                                    apiUrl:
+                                    "https://imdb236.p.rapidapi.com/imdb/top250-tv",
+                                    title: "Popular TV Shows",
+                                  )));
                         },
                       ),
                       ListTile(
@@ -190,20 +207,17 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.black),
-                  title: const Text('Logout', style: TextStyle(color: Colors.black)),
+                  title: const Text('Logout',
+                      style: TextStyle(color: Colors.black)),
                   onTap: () {
-                    // Perform logout logic
                     Navigator.pop(context); // Close drawer
                     _logOut();
-
-                    // Add any other logout functionality here
                   },
                 ),
-                SizedBox(height: 10,)
+                const SizedBox(height: 10),
               ],
             ),
           ),
-        )
-    );
+        ));
   }
 }

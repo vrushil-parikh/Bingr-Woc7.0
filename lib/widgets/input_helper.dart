@@ -41,7 +41,7 @@ class _CustomPasswordTextFieldState extends State<CustomPasswordTextField> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5), // Default color
+            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1), // Default color
           ),
           prefixIcon: Icon(widget.iconData),
           suffixIcon: widget.isPasswordField

@@ -75,7 +75,7 @@ class FavouritePage extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: Colors.indigo),
                     onPressed: () async {
                       await FirebaseFirestore.instance
                           .collection('users')
